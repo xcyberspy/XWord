@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XWord — Text Case Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111'/><text x='16' y='22' text-anchor='middle' font-family='serif' font-size='20' font-weight='700' fill='%236366f1'>X</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#09090b;
+  --c-surface:#111113;
+  --c-panel:#18181b;
+  --c-panel2:#1f1f23;
+  --c-border:#2a2a30;
+  --c-border2:#38383f;
+  --c-text:#f4f4f5;
+  --c-text2:#a1a1aa;
+  --c-text3:#52525b;
+  --c-accent:#6366f1;
+  --c-accent-glow:rgba(99,102,241,0.15);
+  --c-accent2:#ec4899;
+  --c-green:#22c55e;
+  --c-red:#ef4444;
+  --r:12px;
+  --r-sm:8px;
+  --r-lg:16px;
+  --trans:.15s ease;
+}
+[data-theme="light"]{
+  --c-bg:#f8f8fa;
+  --c-surface:#ffffff;
+  --c-panel:#f1f1f5;
+  --c-panel2:#e8e8ef;
+  --c-border:#e0e0e8;
+  --c-border2:#d0d0da;
+  --c-text:#09090b;
+  --c-text2:#52525b;
+  --c-text3:#a1a1aa;
+  --c-accent:#4f46e5;
+  --c-accent-glow:rgba(79,70,229,0.1);
+}
+html{font-size:15px}
+body{
+  background:var(--c-bg);
+  color:var(--c-text);
+  font-family:'Inter',sans-serif;
+  font-weight:400;
+  min-height:100vh;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.page{
+  max-width:860px;
+  margin:0 auto;
+  padding:0 20px 80px;
+}
+
+/* ── HEADER ── */
+nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:24px 0 32px;
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-icon{
+  width:36px;height:36px;
+  background:var(--c-accent);
+  border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.brand-icon::after{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+}
+.brand-icon svg{position:relative;z-index:1}
+.brand-name{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:20px;font-weight:700;
+  letter-spacing:-0.02em;
+  color:var(--c-text);
+}
+.brand-name sup{
+  font-size:10px;font-weight:600;
+  background:var(--c-accent);color:#fff;
+  border-radius:4px;padding:1px 5px;
+  vertical-align:top;margin-top:4px;
+  letter-spacing:0;font-family:'Inter',sans-serif;
+}
+.nav-right{display:flex;align-items:center;gap:8px}
+.pill-badge{
+  font-size:11px;font-weight:500;
+  color:var(--c-text2);
+  background:var(--c-panel);
+  border:1px solid var(--c-border);
+  border-radius:99px;
+  padding:5px 12px;
+  letter-spacing:0.02em;
+  display:none;
+}
+@media(min-width:520px){.pill-badge{display:block}}
+.icon-btn{
+  width:34px;height:34px;
+  border-radius:8px;
+  border:1px solid var(--c-border);
+  background:var(--c-panel);
+  color:var(--c-text2);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--trans);
+  font-size:15px;
+  line-height:1;
+}
+.icon-btn:hover{border-color:var(--c-border2);color:var(--c-text);background:var(--c-panel2)}
+
+/* ── MAIN EDITOR ── */
+.editor-card{
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  transition:border-color var(--trans);
+}
+.editor-card:focus-within{border-color:var(--c-accent)}
+.editor-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;
+  border-bottom:1px solid var(--c-border);
+  background:var(--c-panel);
+  gap:8px;
+}
+.editor-head-label{
+  font-size:11px;font-weight:500;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--c-text3);
+}
+.ed-actions{display:flex;gap:6px}
+.btn-xs{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 10px;
+  border-radius:6px;
+  font-size:12px;font-weight:500;
+  cursor:pointer;
+  border:1px solid var(--c-border);
+  background:transparent;
+  color:var(--c-text2);
+  transition:all var(--trans);
+  font-family:'Inter',sans-serif;
+  white-space:nowrap;
+}
+.btn-xs:hover{background:var(--c-panel2);border-color:var(--c-border2);color:var(--c-text)}
+textarea{
+  display:block;width:100%;
+  min-height:200px;
+  padding:18px 16px;
+  background:transparent;
+  border:none;outline:none;
+  resize:vertical;
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;line-height:1.8;
+  color:var(--c-text);
+  caret-color:var(--c-accent);
+}
+textarea::placeholder{color:var(--c-text3)}
+.stats-row{
+  display:flex;align-items:center;
+  padding:9px 14px;
+  border-top:1px solid var(--c-border);
+  background:var(--c-panel);
+  gap:2px;
+  flex-wrap:wrap;
+}
+.stat-item{
+  display:flex;align-items:center;gap:5px;
+  padding:3px 8px;
+  border-radius:5px;
+  font-size:11.5px;
+  color:var(--c-text2);
+  transition:background var(--trans);
+}
+.stat-item:hover{background:var(--c-panel2)}
+.stat-item b{
+  color:var(--c-text);
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  min-width:18px;
+  display:inline-block;
+}
+.stat-dot{color:var(--c-text3);font-size:16px;line-height:1;padding:0 2px}
+
+/* ── CASES ── */
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:28px 0 12px;
+}
+.section-title{
+  font-size:11px;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--c-text3);
+}
+.shortcut-tip{
+  font-size:11px;color:var(--c-text3);
+}
+.shortcut-tip kbd{
+  background:var(--c-panel2);
+  border:1px solid var(--c-border2);
+  border-radius:4px;
+  padding:0 5px;
+  font-size:10px;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--c-text2);
+}
+.cases-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+  gap:8px;
+}
+.case-btn{
+  position:relative;
+  padding:13px 14px 12px;
+  border-radius:var(--r-sm);
+  border:1px solid var(--c-border);
+  background:var(--c-surface);
+  cursor:pointer;
+  transition:all .15s ease;
+  text-align:left;
+  overflow:hidden;
+}
+.case-btn::before{
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:3px;
+  background:var(--c-accent);
+  opacity:0;
+  transition:opacity .15s;
+  border-radius:0;
+}
+.case-btn:hover{
+  border-color:var(--c-border2);
+  background:var(--c-panel);
+  transform:translateY(-1px);
+}
+.case-btn:hover::before{opacity:0.5}
+.case-btn.active{
+  border-color:var(--c-accent);
+  background:var(--c-panel);
+}
+.case-btn.active::before{opacity:1}
+.case-btn:active{transform:none}
+.cb-label{
+  display:block;
+  font-size:13px;font-weight:500;
+  color:var(--c-text);
+  margin-bottom:3px;
+  transition:color .15s;
+}
+.case-btn:hover .cb-label,.case-btn.active .cb-label{color:var(--c-accent)}
+.cb-sample{
+  display:block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+  color:var(--c-text3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cb-shortcut{
+  position:absolute;top:10px;right:10px;
+  font-size:9.5px;font-family:'JetBrains Mono',monospace;
+  color:var(--c-text3);
+  background:var(--c-panel2);
+  border:1px solid var(--c-border);
+  border-radius:4px;padding:1px 5px;
+  opacity:0;transition:opacity .15s;
+}
+.case-btn:hover .cb-shortcut{opacity:1}
+
+/* ── ACTIONS ── */
+.action-bar{
+  display:flex;align-items:center;gap:8px;
+  margin-top:18px;flex-wrap:wrap;
+}
+.btn{
+  display:flex;align-items:center;gap:7px;
+  padding:10px 18px;
+  border-radius:var(--r-sm);
+  font-size:13.5px;font-weight:500;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:all .15s;
+  font-family:'Inter',sans-serif;
+  white-space:nowrap;
+  line-height:1;
+}
+.btn-primary{
+  background:var(--c-accent);
+  color:#fff;
+  border-color:var(--c-accent);
+}
+.btn-primary:hover{
+  background:transparent;
+  color:var(--c-accent);
+  box-shadow:0 0 0 3px var(--c-accent-glow);
+}
+.btn-secondary{
+  background:var(--c-surface);
+  color:var(--c-text2);
+  border-color:var(--c-border);
+}
+.btn-secondary:hover{
+  background:var(--c-panel2);
+  border-color:var(--c-border2);
+  color:var(--c-text);
+}
+.btn-danger{
+  background:transparent;
+  color:var(--c-text3);
+  border-color:var(--c-border);
+  margin-left:auto;
+}
+.btn-danger:hover{
+  color:var(--c-red);
+  border-color:var(--c-red);
+  background:rgba(239,68,68,0.05);
+}
+.btn-success-flash{
+  background:transparent !important;
+  color:var(--c-green) !important;
+  border-color:var(--c-green) !important;
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  opacity:0;
+  background:var(--c-surface);
+  border:1px solid var(--c-border2);
+  color:var(--c-text);
+  padding:10px 20px;
+  border-radius:99px;
+  font-size:13px;font-weight:500;
+  z-index:999;
+  pointer-events:none;
+  display:flex;align-items:center;gap:8px;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .25s;
+  white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+[data-theme="light"] .toast{box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast-dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--c-green);
+  flex-shrink:0;
+}
+
+/* ── FOOTER ── */
+footer{
+  margin-top:48px;
+  padding-top:24px;
+  border-top:1px solid var(--c-border);
+  text-align:center;
+  font-size:12px;
+  color:var(--c-text3);
+}
+footer a{color:var(--c-text2);text-decoration:none}
+footer a:hover{color:var(--c-accent)}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.editor-card{animation:fadeUp .3s ease .05s both}
+.cases-grid  {animation:fadeUp .3s ease .12s both}
+.action-bar  {animation:fadeUp .3s ease .18s both}
+
+@media(max-width:500px){
+  .cases-grid{grid-template-columns:1fr 1fr}
+  .btn-danger{margin-left:0}
+  .action-bar{flex-direction:column;align-items:stretch}
+  .btn{justify-content:center}
+}
+@media(max-width:340px){
+  .cases-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- NAV -->
+  <nav>
+    <a class="brand" href="#">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 3L9 10L3 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11 3L17 10L11 17" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">XWord</span>
+    </a>
+    <div class="nav-right">
+      <span class="pill-badge">Text Case Converter</span>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">
+        <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- EDITOR -->
+  <div class="editor-card">
+    <div class="editor-head">
+      <span class="editor-head-label">Your Text</span>
+      <div class="ed-actions">
+        <button class="btn-xs" id="pasteBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          Paste
+        </button>
+      </div>
+    </div>
+
+    <textarea id="textInput" placeholder="Type or paste your text here…" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+
+    <div class="stats-row">
+      <div class="stat-item"><b id="sChars">0</b> chars</div>
+      <span class="stat-dot">·</span>
+      <div class="stat-item"><b id="sWords">0</b> words</div>
+      <span class="stat-dot">·</span>
+      <div class="stat-item"><b id="sLines">0</b> lines</div>
+      <span class="stat-dot">·</span>
+      <div class="stat-item"><b id="sSents">0</b> sentences</div>
+    </div>
+  </div>
+
+  <!-- CASES -->
+  <div class="section-head">
+    <span class="section-title">Convert to</span>
+    <span class="shortcut-tip"><kbd>Alt</kbd> + <kbd>1–8</kbd> for quick apply</span>
+  </div>
+
+  <div class="cases-grid" id="casesGrid"></div>
+
+  <!-- ACTIONS -->
+  <div class="action-bar">
+    <button class="btn btn-primary" id="copyBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy to Clipboard
+    </button>
+    <button class="btn btn-secondary" id="downloadBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download .txt
+    </button>
+    <button class="btn btn-danger" id="clearBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Clear
+    </button>
+  </div>
+
+  <footer>
+    <p>XWord — Fast & lightweight text transformation &nbsp;</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastText">Done!</span>
+</div>
+
+<script>
+const CASES=[
+  {id:'upper',  label:'UPPER CASE',     sample:'HELLO WORLD',       key:'Alt+1', fn:t=>t.toUpperCase()},
+  {id:'lower',  label:'lower case',     sample:'hello world',       key:'Alt+2', fn:t=>t.toLowerCase()},
+  {id:'sentence',label:'Sentence case', sample:'Hello world here.', key:'Alt+3', fn:t=>t.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g,c=>c.toUpperCase())},
+  {id:'title',  label:'Title Case',     sample:'Hello World Here',  key:'Alt+4', fn:t=>{
+    const m=new Set(['a','an','the','and','but','or','nor','for','so','yet','at','by','in','of','on','to','up','as']);
+    return t.toLowerCase().replace(/\b\w+/g,(w,i)=>(!i||!m.has(w))?w[0].toUpperCase()+w.slice(1):w);
+  }},
+  {id:'cap',    label:'Capitalized Case',sample:'Hello World',      key:'Alt+5', fn:t=>t.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())},
+  {id:'alt',    label:'aLtErNaTiNg',    sample:'hElLo wOrLd',       key:'Alt+6', fn:t=>{let i=0;return t.replace(/[a-zA-Z]/g,c=>(i++%2===0?c.toLowerCase():c.toUpperCase()))}},
+  {id:'inverse',label:'iNVERSE cASE',   sample:'hELLO wORLD',       key:'Alt+7', fn:t=>t.split('').map(c=>c===c.toUpperCase()?c.toLowerCase():c.toUpperCase()).join('')},
+  {id:'pascal', label:'PascalCase',     sample:'HelloWorldHere',    key:'Alt+8', fn:t=>(t.match(/[a-zA-Z0-9]+/g)||[]).map(w=>w[0].toUpperCase()+w.slice(1).toLowerCase()).join('')}
+];
+
+const grid=document.getElementById('casesGrid');
+const ta=document.getElementById('textInput');
+let original='', active=null;
+
+// Build buttons
+CASES.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.className='case-btn';
+  b.dataset.id=c.id;
+  b.innerHTML=`<span class="cb-label">${c.label}</span><span class="cb-sample">${c.sample}</span><span class="cb-shortcut">${c.key}</span>`;
+  b.addEventListener('click',()=>apply(c.id));
+  grid.appendChild(b);
+});
+
+function apply(id){
+  const c=CASES.find(x=>x.id===id);
+  if(!c)return;
+  if(!original)original=ta.value;
+  ta.value=c.fn(original);
+  active=id;
+  grid.querySelectorAll('.case-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
+  stats();
+}
+
+function stats(){
+  const v=ta.value;
+  document.getElementById('sChars').textContent=v.length;
+  document.getElementById('sWords').textContent=v.trim()?v.trim().split(/\s+/).length:0;
+  document.getElementById('sLines').textContent=v?v.split('\n').length:0;
+  document.getElementById('sSents').textContent=(v.match(/[.!?]+/g)||[]).length;
+}
+
+ta.addEventListener('input',()=>{
+  original=ta.value;active=null;
+  grid.querySelectorAll('.case-btn').forEach(b=>b.classList.remove('active'));
+  stats();
+  localStorage.setItem('xw',ta.value);
+});
+
+// Copy
+document.getElementById('copyBtn').addEventListener('click',async()=>{
+  if(!ta.value)return;
+  try{await navigator.clipboard.writeText(ta.value);}
+  catch{ta.select();document.execCommand('copy');}
+  const btn=document.getElementById('copyBtn');
+  btn.classList.add('btn-success-flash');
+  toast('Copied to clipboard!');
+  setTimeout(()=>btn.classList.remove('btn-success-flash'),1800);
+});
+
+// Download
+document.getElementById('downloadBtn').addEventListener('click',()=>{
+  if(!ta.value)return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([ta.value],{type:'text/plain'}));
+  a.download='xword.txt';a.click();
+  URL.revokeObjectURL(a.href);
+  toast('File downloaded!');
+});
+
+// Clear
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  ta.value='';original='';active=null;
+  grid.querySelectorAll('.case-btn').forEach(b=>b.classList.remove('active'));
+  stats();localStorage.removeItem('xw');ta.focus();
+});
+
+// Paste
+document.getElementById('pasteBtn').addEventListener('click',async()=>{
+  try{
+    const t=await navigator.clipboard.readText();
+    ta.value=t;original=t;
+    grid.querySelectorAll('.case-btn').forEach(b=>b.classList.remove('active'));
+    stats();localStorage.setItem('xw',t);
+    toast('Pasted!');
+  }catch{ta.focus();}
+});
+
+// Theme
+const savedTheme=localStorage.getItem('xwTheme')||'dark';
+setTheme(savedTheme);
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  setTheme(cur==='dark'?'light':'dark');
+});
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('xwTheme',t);
+  const icon=document.getElementById('themeIcon');
+  if(t==='light'){
+    icon.innerHTML='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  } else {
+    icon.innerHTML='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+}
+
+// Toast
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.altKey&&e.key>='1'&&e.key<='8'){
+    e.preventDefault();
+    apply(CASES[parseInt(e.key)-1].id);
+  }
+  if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='C'){
+    e.preventDefault();
+    document.getElementById('copyBtn').click();
+  }
+  if(e.key==='Escape'&&document.activeElement===ta){
+    document.getElementById('clearBtn').click();
+  }
+});
+
+// Restore
+const saved=localStorage.getItem('xw');
+if(saved){ta.value=saved;original=saved;}
+stats();
+</script>
+</body>
+</html>
