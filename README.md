@@ -6,6 +6,9 @@
 
 <h2>Project Screenshots:</h2> 
 <p align="center" href="https://ibb.co/k2WyDCvB"><img src="https://i.ibb.co/tpWh2rFK/xword.png" alt="xword" border="0"</p>
+<h2>🚀 Demo</h2>
+https://xcyberspy.github.io/XWord/
+
 <h2>🧐 Features</h2>
 
 Here're some of the project's best features:
