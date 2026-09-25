@@ -35,7 +35,7 @@ cd XWord
 <p>3. Open Html File in any Browser</p>
 
 ```
-xword.html
+index.html
 ```
 
   
